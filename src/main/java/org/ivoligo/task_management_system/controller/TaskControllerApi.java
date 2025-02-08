@@ -1,5 +1,8 @@
 package org.ivoligo.task_management_system.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.ivoligo.task_management_system.model.dto.TaskDto;
 import org.springframework.http.ResponseEntity;
@@ -7,22 +10,38 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RequestMapping("/api")
+
+@RequestMapping("/task")
+@Tag(name = "Задачи", description = "Контроллер для управления задачами")
 public interface TaskControllerApi {
 
     @GetMapping("/list")
+    @Operation(summary = "Получение списка задач",
+            description = "Позволяет получить список задач")
     ResponseEntity<List<TaskDto>> getTasks();
 
-    @GetMapping("/task/{taskId}")
-    ResponseEntity<TaskDto> getTask(@PathVariable(value = "taskId") Long id);
+    @GetMapping("/{id}")
+    @Operation(summary = "Получение задачи по идентификатору",
+            description = "Позволяет данные конкретной задачи")
+    ResponseEntity<TaskDto> getTask(
+            @PathVariable(value = "id") @Parameter(description = "Идентификатор задачи", example = "1") Long id);
 
     @PostMapping("/create")
-    ResponseEntity<Long> addTask(@RequestBody TaskDto task);
+    @Operation(summary = "Заведение задачи",
+            description = "Позволяет завести новую задачу")
+    ResponseEntity<Long> addTask(
+            @RequestBody @Valid TaskDto task);
 
     @PatchMapping("/update")
-    ResponseEntity<?> updateTask(@RequestBody @Valid TaskDto task);
+    @Operation(summary = "Обновление задачи",
+            description = "Позволяет обновить конкретную задачу, например описание или статус")
+    ResponseEntity<?> updateTask(
+            @RequestBody @Valid TaskDto task);
 
-    @DeleteMapping("/delete/{taskId}")
-    ResponseEntity<?> deleteTask(@PathVariable(value = "taskId") Long id);
+    @DeleteMapping("/delete/{id}")
+    @Operation(summary = "Удаление конкретной задачи",
+            description = "Позволяет удалить задачу")
+    ResponseEntity<?> deleteTask(
+            @PathVariable(value = "id") @Parameter(description = "Идентификатор задачи", example = "1") Long id);
 
 }

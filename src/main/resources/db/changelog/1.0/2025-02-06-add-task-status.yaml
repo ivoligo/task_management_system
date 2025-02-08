@@ -1,0 +1,41 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1738870265000-1
+      author: OLIvanov
+      changes:
+        - insert:
+            tableName: task_status
+            columns:
+              - column:
+                  name: id
+                  value: "1"
+              - column:
+                  name: name
+                  value: "Новая"
+              - column:
+                  name: status_order
+                  value: "1"
+        - insert:
+            tableName: task_status
+            columns:
+              - column:
+                  name: id
+                  value: "2"
+              - column:
+                  name: name
+                  value: "В работе"
+              - column:
+                  name: status_order
+                  value: "2"
+        - insert:
+            tableName: task_status
+            columns:
+              - column:
+                  name: id
+                  value: "3"
+              - column:
+                  name: name
+                  value: "Завершена"
+              - column:
+                  name: status_order
+                  value: "3"

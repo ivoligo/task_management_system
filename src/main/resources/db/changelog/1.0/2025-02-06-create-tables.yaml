@@ -1,0 +1,71 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1738866499246-1
+      author: OLIvanov
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  autoIncrement: true
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_task
+                  name: id
+                  type: BIGINT
+              - column:
+                  constraints:
+                    nullable: false
+                  name: name
+                  type: VARCHAR(255)
+              - column:
+                  constraints:
+                    nullable: false
+                  name: task_status
+                  type: INT
+              - column:
+                  name: description
+                  type: VARCHAR(255)
+              - column:
+                  constraints:
+                    nullable: false
+                  name: created_date
+                  type: DATETIME
+              - column:
+                  name: update_date
+                  type: DATETIME
+            tableName: task
+  - changeSet:
+      id: 1738866499246-2
+      author: OLIvanov
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - createTable:
+            columns:
+              - column:
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_task_status
+                  name: id
+                  type: INT
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+              - column:
+                  name: status_order
+                  type: INT
+            tableName: task_status
+  - changeSet:
+      id: 1738866499246-3
+      author: OLIvanov
+      objectQuotingStrategy: QUOTE_ONLY_RESERVED_WORDS
+      changes:
+        - addForeignKeyConstraint:
+            baseColumnNames: task_status
+            baseTableName: task
+            constraintName: FK_TASK_ON_TASK_STATUS
+            referencedColumnNames: id
+            referencedTableName: task_status
+

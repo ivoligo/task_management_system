@@ -1,9 +1,11 @@
 package org.ivoligo.task_management_system.service.impl;
 
 import lombok.val;
+import org.ivoligo.task_management_system.model.dto.FilterSortDto;
 import org.ivoligo.task_management_system.model.dto.TaskDto;
 import org.ivoligo.task_management_system.model.entity.Task;
 import org.ivoligo.task_management_system.repository.TaskRepository;
+import org.ivoligo.task_management_system.repository.TaskRepositoryCustom;
 import org.ivoligo.task_management_system.repository.TaskStatusRepository;
 import org.ivoligo.task_management_system.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,10 +16,7 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Transactional
@@ -26,10 +25,12 @@ public class TaskServiceImpl implements TaskService {
     DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 
     private final TaskRepository taskRepository;
+    private final TaskRepositoryCustom taskRepositoryCustom;
     private final TaskStatusRepository taskStatusRepository;
 
-    public TaskServiceImpl(@Autowired TaskRepository taskRepository, TaskStatusRepository taskStatusRepository) {
+    public TaskServiceImpl(@Autowired TaskRepository taskRepository, TaskRepositoryCustom taskRepositoryCustom, TaskStatusRepository taskStatusRepository) {
         this.taskRepository = taskRepository;
+        this.taskRepositoryCustom = taskRepositoryCustom;
         this.taskStatusRepository = taskStatusRepository;
     }
 
@@ -50,10 +51,10 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public List<TaskDto> getTasks() {
+    public List<TaskDto> getTasks(FilterSortDto filterSort) {
 
         var tasks = new ArrayList<TaskDto>();
-        taskRepository.findAll().forEach(task -> tasks.add(convert(task)));
+        taskRepositoryCustom.findByParam(filterSort).forEach(task -> tasks.add(convert(task)));
 
         return tasks;
     }
@@ -127,7 +128,7 @@ public class TaskServiceImpl implements TaskService {
         try {
             timestamp = new Timestamp(dateFormat.parse(date).getTime());
         } catch (ParseException e) {
-            e.printStackTrace();
+            e.getMessage();
         }
         return timestamp;
     }

@@ -34,8 +34,7 @@ public class TaskRepositoryCustomImpl implements TaskRepositoryCustom {
         if (filterSort.isSortCreatedDate()) {
             //Сделал desc, чтобы было видно как работает.
             sqlFilter.append(" order by t.createdDate desc ");
-        }
-        if (filterSort.isSortModifiedDate()) {
+        } else if (filterSort.isSortModifiedDate()) {
             //Сделал desc, чтобы было видно как работает.
             sqlFilter.append(" order by t.updatedDate desc ");
         }

@@ -1,6 +1,7 @@
 package org.ivoligo.task_management_system.controller;
 
 import jakarta.validation.Valid;
+import org.ivoligo.task_management_system.model.dto.FilterSortDto;
 import org.ivoligo.task_management_system.model.dto.TaskDto;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,7 +12,7 @@ import java.util.List;
 public interface TaskControllerApi {
 
     @GetMapping("/list")
-    ResponseEntity<List<TaskDto>> getTasks();
+    ResponseEntity<List<TaskDto>> getTasks(@RequestBody FilterSortDto filterSort);
 
     @GetMapping("/task/{taskId}")
     ResponseEntity<TaskDto> getTask(@PathVariable(value = "taskId") Long id);

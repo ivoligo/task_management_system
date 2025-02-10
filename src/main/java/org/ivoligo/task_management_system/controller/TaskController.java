@@ -1,13 +1,12 @@
 package org.ivoligo.task_management_system.controller;
 
-import lombok.val;
+import org.ivoligo.task_management_system.model.dto.FilterSortDto;
 import org.ivoligo.task_management_system.model.dto.TaskDto;
 import org.ivoligo.task_management_system.service.TaskService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-import org.springframework.web.util.UriBuilder;
 
 import java.util.List;
 
@@ -21,9 +20,9 @@ public class TaskController implements TaskControllerApi {
     }
 
     @Override
-    public ResponseEntity<List<TaskDto>> getTasks() {
+    public ResponseEntity<List<TaskDto>> getTasks(FilterSortDto filterSort) {
 
-        var tasks = taskService.getTasks();
+        var tasks = taskService.getTasks(filterSort);
         return !(tasks == null && tasks.isEmpty())
                 ? ResponseEntity.ok(tasks)
                 : ResponseEntity.notFound().build();

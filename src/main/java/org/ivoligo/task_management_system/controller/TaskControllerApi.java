@@ -1,8 +1,5 @@
 package org.ivoligo.task_management_system.controller;
 
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.ivoligo.task_management_system.model.dto.TaskDto;
 import org.springframework.http.ResponseEntity;
@@ -16,9 +13,7 @@ import java.util.List;
 public interface TaskControllerApi {
 
     @GetMapping("/list")
-    @Operation(summary = "Получение списка задач",
-            description = "Позволяет получить список задач")
-    ResponseEntity<List<TaskDto>> getTasks();
+    ResponseEntity<List<TaskDto>> getTasks(@RequestBody FilterSortDto filterSort);
 
     @GetMapping("/{id}")
     @Operation(summary = "Получение задачи по идентификатору",

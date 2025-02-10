@@ -11,12 +11,4 @@ import java.util.List;
 
 public interface TaskRepository extends CrudRepository<Task, Long> {
 
-//    default String resultQuery(String query){
-//        return query;
-//    }
-//
-//    @Query("select t from Task t join TaskStatus ts on t.status.id = ts.id where ts.name in (:statuses)")
-//    List<Task> findByStatus(@Param("statuses") List<String> statuses);
-
-
 }

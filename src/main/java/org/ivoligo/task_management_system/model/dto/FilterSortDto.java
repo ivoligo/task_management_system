@@ -11,7 +11,7 @@ import java.util.List;
 @Schema(description = "Сущность для фильтрации и сортировки.")
 public class FilterSortDto {
 
-    @Schema(description = "Фильтр для получения списка задач по статусу или статусам", example = "[\"Новая\", \"Завершена\"]")
+    @Schema(description = "Фильтр для получения списка задач по статусу или статусам", example = "[\"Новая\", \"Завершена\"]", allowableValues = {"Новая", "В работе", "Завершена"})
     private List<String> filterStatusNames;
 
     @Schema(description = "Включение сортировки по дате создания", example = "true")

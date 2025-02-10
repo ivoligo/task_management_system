@@ -25,11 +25,12 @@ public class TaskRepositoryCustomImpl implements TaskRepositoryCustom {
     public List<Task> findByParam(FilterSortDto filterSort) {
 
         StringBuilder sqlFilter = new StringBuilder();
-        Map<String, String> sqlParams = new HashMap<String, String>();
+        Map<String, List<String>> sqlParams = new HashMap<>();
 
         if (filterSort.getFilterStatusNames() != null && !filterSort.getFilterStatusNames().isEmpty()) {
             sqlFilter.append(" join TaskStatus ts on t.status.id = ts.id where ts.name in (:statuses) ");
-            sqlParams.put("statuses", StringUtils.join(filterSort.getFilterStatusNames(), ","));
+            sqlParams.put("statuses", filterSort.getFilterStatusNames());
+
         }
         if (filterSort.isSortCreatedDate()) {
             //Сделал desc, чтобы было видно как работает.
@@ -41,7 +42,7 @@ public class TaskRepositoryCustomImpl implements TaskRepositoryCustom {
 
         Query query = em.createQuery(FIND_TASKS_SQL_QUERY + sqlFilter, Task.class);
         sqlParams.forEach(query::setParameter);
-
-        return query.getResultList();
+var test = query.getResultList();
+        return test;
     }
 }

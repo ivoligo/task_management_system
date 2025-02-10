@@ -6,21 +6,33 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.ivoligo.task_management_system.model.dto.FilterSortDto;
 import org.ivoligo.task_management_system.model.dto.TaskDto;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-
 @RequestMapping("/api")
 @Tag(name = "Задачи", description = "Контроллер для управления задачами")
 public interface TaskControllerApi {
+
+    @Operation(summary = "Получение списка задач с пагинацией в зависимости от условий.",
+            description = "Позволяет получить список всех задач постранично и с указанием количества задач на странице, " +
+                    "а также в зависимости от указанных условий: " +
+                    "статусам и сортировке по дате создания или дате изменения. " +
+                    "Если ничего не указано возвращает список всех задач.")
+    @GetMapping("/page")
+    ResponseEntity<Page<TaskDto>> getTasks(
+            @RequestParam(required = false, defaultValue = "0") int page,
+            @RequestParam(required = false, defaultValue = "1") int size,
+            @RequestBody FilterSortDto filterSort);
 
     @PostMapping("/list")
     @Operation(summary = "Получение списка задач в зависимости от условий.",
             description = "Позволяет получить список всех задач в зависимости от указанных условий: " +
                     "статусам и сортировке по дате создания или дате изменения. " +
                     "Если ничего не указано возвращает список всех задач.")
+    @GetMapping("/list")
     ResponseEntity<List<TaskDto>> getTasks(@RequestBody FilterSortDto filterSort);
 
     @GetMapping("/{id}")

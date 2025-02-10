@@ -17,3 +17,6 @@ spring:
   liquibase:
     enabled: true
     change-log: classpath:db/changelog/db.changelog-master.yaml
+  aop:
+    auto: true
+    proxy-target-class: true

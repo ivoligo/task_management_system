@@ -3,10 +3,11 @@ package org.ivoligo.task_management_system.repository.impl;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
-import org.apache.commons.lang3.StringUtils;
+import lombok.val;
 import org.ivoligo.task_management_system.model.dto.FilterSortDto;
 import org.ivoligo.task_management_system.model.entity.Task;
 import org.ivoligo.task_management_system.repository.TaskRepositoryCustom;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
@@ -24,6 +25,24 @@ public class TaskRepositoryCustomImpl implements TaskRepositoryCustom {
     @Override
     public List<Task> findByParam(FilterSortDto filterSort) {
 
+        Query query = getQuery(filterSort);
+
+        return query.getResultList();
+    }
+
+    @Override
+    public List<Task> findByParam(FilterSortDto filterSort, Pageable pageable) {
+
+        Query query = getQuery(filterSort);
+        val pageNumber = pageable.getPageNumber();
+        val pageSize = pageable.getPageSize();
+        query.setFirstResult((pageNumber) * pageSize);
+        query.setMaxResults(pageSize);
+
+        return query.getResultList();
+    }
+
+    private Query getQuery(FilterSortDto filterSort) {
         StringBuilder sqlFilter = new StringBuilder();
         Map<String, List<String>> sqlParams = new HashMap<>();
 
@@ -42,7 +61,7 @@ public class TaskRepositoryCustomImpl implements TaskRepositoryCustom {
 
         Query query = em.createQuery(FIND_TASKS_SQL_QUERY + sqlFilter, Task.class);
         sqlParams.forEach(query::setParameter);
-var test = query.getResultList();
-        return test;
+
+        return query;
     }
 }

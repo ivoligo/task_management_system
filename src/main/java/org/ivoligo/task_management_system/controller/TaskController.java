@@ -1,8 +1,12 @@
 package org.ivoligo.task_management_system.controller;
 
+import org.ivoligo.task_management_system.aop.logging.annotation.LoggingAround;
 import org.ivoligo.task_management_system.model.dto.FilterSortDto;
 import org.ivoligo.task_management_system.model.dto.TaskDto;
 import org.ivoligo.task_management_system.service.TaskService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -17,6 +21,16 @@ public class TaskController implements TaskControllerApi {
 
     public TaskController(TaskService taskService) {
         this.taskService = taskService;
+    }
+
+    @Override
+    public ResponseEntity<Page<TaskDto>> getTasks(int page, int size, FilterSortDto filterSort) {
+
+        Pageable pageable = PageRequest.of(page, size);
+        var tasks = taskService.getTasks(filterSort, pageable);
+        return !(tasks == null && tasks.isEmpty())
+                ? ResponseEntity.ok(tasks)
+                : ResponseEntity.notFound().build();
     }
 
     @Override
@@ -38,6 +52,7 @@ public class TaskController implements TaskControllerApi {
     }
 
     @Override
+    @LoggingAround
     public ResponseEntity<Long> addTask(TaskDto task) {
 
         var taskId = taskService.createTask(task);
@@ -46,6 +61,7 @@ public class TaskController implements TaskControllerApi {
     }
 
     @Override
+    @LoggingAround
     public ResponseEntity<?> updateTask(TaskDto task) {
 
         var isUpdated = taskService.updateTask(task);
@@ -56,6 +72,7 @@ public class TaskController implements TaskControllerApi {
     }
 
     @Override
+    @LoggingAround
     public ResponseEntity<?> deleteTask(Long id) {
 
         return taskService.deleteTask(id)

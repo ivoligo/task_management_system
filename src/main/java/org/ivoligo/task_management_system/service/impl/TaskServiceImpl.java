@@ -1,6 +1,7 @@
 package org.ivoligo.task_management_system.service.impl;
 
 import lombok.val;
+import org.ivoligo.task_management_system.aop.logging.annotation.LoggingAround;
 import org.ivoligo.task_management_system.model.dto.FilterSortDto;
 import org.ivoligo.task_management_system.model.dto.TaskDto;
 import org.ivoligo.task_management_system.model.entity.Task;
@@ -9,6 +10,9 @@ import org.ivoligo.task_management_system.repository.TaskRepositoryCustom;
 import org.ivoligo.task_management_system.repository.TaskStatusRepository;
 import org.ivoligo.task_management_system.service.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,7 +20,9 @@ import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 @Service
 @Transactional
@@ -35,6 +41,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @LoggingAround
     public Long createTask(TaskDto taskDto) {
 
         var task = new Task();
@@ -48,6 +55,16 @@ public class TaskServiceImpl implements TaskService {
 
         var test = taskRepository.save(task);
         return test.getId();
+    }
+
+    @Override
+    public Page<TaskDto> getTasks(FilterSortDto filterSort, Pageable pageable) {
+
+        var tasks = new ArrayList<TaskDto>();
+        taskRepositoryCustom.findByParam(filterSort, pageable).forEach(task -> tasks.add(convert(task)));
+        val countAllTasks = taskRepository.count();
+
+        return new PageImpl<>(tasks, pageable, countAllTasks);
     }
 
     @Override
@@ -65,7 +82,9 @@ public class TaskServiceImpl implements TaskService {
         return convert(taskRepository.findById(id).orElse(null));
     }
 
+
     @Override
+    @LoggingAround
     public boolean updateTask(TaskDto taskDto) {
 
         val taskOptional = taskRepository.findById(taskDto.getId());
@@ -79,6 +98,7 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
+    @LoggingAround
     public boolean deleteTask(Long id) {
 
         if (taskRepository.findById(id).isPresent()) {

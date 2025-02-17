@@ -2,13 +2,17 @@ package org.ivoligo.task_management_system.model.entity;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.Accessors;
 
 @Getter
 @Setter
 @Entity
+@Accessors(chain = true)
 @Table(name = "task_status")
+//@RequiredArgsConstructor
+@NoArgsConstructor
+@AllArgsConstructor
 public class TaskStatus {
 
     @Id

@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface TaskService {
 
-    Long createTask(TaskDto task);
+    TaskDto createTask(TaskDto task);
 
     Page<TaskDto> getTasks(FilterSortDto filterSort, Pageable pageable);
 

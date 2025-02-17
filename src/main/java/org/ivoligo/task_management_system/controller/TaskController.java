@@ -28,18 +28,18 @@ public class TaskController implements TaskControllerApi {
 
         Pageable pageable = PageRequest.of(page, size);
         var tasks = taskService.getTasks(filterSort, pageable);
-        return !(tasks == null && tasks.isEmpty())
-                ? ResponseEntity.ok(tasks)
-                : ResponseEntity.notFound().build();
+        return tasks
+                .map(taskDtos -> new ResponseEntity<>(taskDtos, HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @Override
     public ResponseEntity<List<TaskDto>> getTasks(FilterSortDto filterSort) {
 
         var tasks = taskService.getTasks(filterSort);
-        return !(tasks == null && tasks.isEmpty())
-                ? ResponseEntity.ok(tasks)
-                : ResponseEntity.notFound().build();
+        return tasks
+                .map(taskDtos -> new ResponseEntity<>(taskDtos, HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @Override
@@ -62,13 +62,13 @@ public class TaskController implements TaskControllerApi {
 
     @Override
     @LoggingAround
-    public ResponseEntity<?> updateTask(TaskDto task) {
+    public ResponseEntity<TaskDto> updateTask(TaskDto task) {
 
-        var isUpdated = taskService.updateTask(task);
-        return isUpdated
-                ? ResponseEntity.ok(isUpdated)
-                // not found или not modified ?
-                : ResponseEntity.status(HttpStatus.NOT_MODIFIED).build();
+        /*
+         @todo: здесь указывать еще Not_found?
+           или то, что выбросится исключение этого достаточно?
+         */
+        return new ResponseEntity<>(taskService.updateTaskIfExists(task), HttpStatus.OK);
     }
 
     @Override

@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -58,22 +59,22 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public Page<TaskDto> getTasks(FilterSortDto filterSort, Pageable pageable) {
+    public Optional<Page<TaskDto>> getTasks(FilterSortDto filterSort, Pageable pageable) {
 
         var taskDtoList = new ArrayList<TaskDto>();
         taskRepositoryCustom.findByParam(filterSort, pageable).forEach(task -> taskDtoList.add(ConvertUtils.convertTaskToDto(task)));
         val countAllTasks = taskRepository.count();
 
-        return new PageImpl<>(taskDtoList, pageable, countAllTasks);
+        return Optional.of(new PageImpl<>(taskDtoList, pageable, countAllTasks));
     }
 
     @Override
-    public List<TaskDto> getTasks(FilterSortDto filterSort) {
+    public Optional<List<TaskDto>> getTasks(FilterSortDto filterSort) {
 
         var tasks = new ArrayList<TaskDto>();
         taskRepositoryCustom.findByParam(filterSort).forEach(task -> tasks.add(ConvertUtils.convertTaskToDto(task)));
 
-        return tasks;
+        return Optional.of(tasks);
     }
 
     @Override
@@ -86,17 +87,14 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @LoggingAround
-    public boolean updateTask(TaskDto taskDto) {
+    public TaskDto updateTaskIfExists(TaskDto taskDto) {
 
-        val taskOptional = taskRepository.findById(taskDto.getId());
-        if (taskOptional.isPresent()) {
+        taskRepository.findById(taskDto.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Задача с идентификатором: " + taskDto.getId() + "не найдена."));
+        var task = ConvertUtils.convertTaskDtoToTask(taskDto);
+        task.setStatus(taskStatusRepository.findTaskStatusByName(taskDto.getStatus()));
 
-            var task = ConvertUtils.convertTaskDtoToTask(taskDto);
-            task.setStatus(taskStatusRepository.findTaskStatusByName(taskDto.getStatus()));
-            taskRepository.save(task);
-            return true;
-        }
-        return false;
+        return ConvertUtils.convertTaskToDto(taskRepository.save(task));
 
     }
 

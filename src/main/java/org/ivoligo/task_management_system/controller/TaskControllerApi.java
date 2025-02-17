@@ -50,7 +50,7 @@ public interface TaskControllerApi {
     @PatchMapping("/update")
     @Operation(summary = "Обновление задачи",
             description = "Позволяет обновить конкретную задачу, например описание или статус")
-    ResponseEntity<?> updateTask(
+    ResponseEntity<TaskDto> updateTask(
             @RequestBody @Valid TaskDto task);
 
     @DeleteMapping("/delete/{id}")

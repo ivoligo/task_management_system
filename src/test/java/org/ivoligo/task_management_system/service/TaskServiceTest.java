@@ -159,8 +159,8 @@ public class TaskServiceTest {
 
         final var resultTasks = taskService.getTasks(params);
 
-        assertNotNull(resultTasks);
-        assertEquals(actualTasks.size(), resultTasks.size());
+        assertTrue(resultTasks.isPresent());
+        assertEquals(actualTasks.size(), resultTasks.get().size());
 
     }
 
@@ -189,16 +189,15 @@ public class TaskServiceTest {
     void updateTask() {
 
         testTaskDto2.setId(1L);
+        testTask.setStatus(statusActive);
         when(taskRepository.findById(any(Long.class))).thenReturn(Optional.of(testTask));
-//        when(taskStatusRepository.save(any(TaskStatus.class))).thenReturn(statusActive);
-        when(taskRepository.save(any(Task.class))).thenReturn(ConvertUtils.convertTaskDtoToTask(testTaskDto2).setId(1L));
+        when(taskStatusRepository.findTaskStatusByName(any())).thenReturn(statusActive);
+        when(taskRepository.save(any(Task.class))).thenReturn(ConvertUtils.convertTaskDtoToTask(testTaskDto2));
 
-        final var result = taskService.updateTask(testTaskDto2);
+        // @todo: почему когда заходит в сервисе в метод convertTaskToDto(Task task) status = null? он же везде есть там.
+        final var result = taskService.updateTaskIfExists(testTaskDto2);
 
-        /* @todo:  сервисах поменять на возврат ДТО и выбрасывание исключений, boolean можно перенести в контроллеры
-            тогда поменять тесты.
-         */
-        assertTrue(result);
+        assertEquals(testTaskDto2, result);
     }
 
     @Test

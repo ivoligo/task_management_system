@@ -9,6 +9,8 @@ import org.ivoligo.task_management_system.repository.TaskRepository;
 import org.ivoligo.task_management_system.repository.TaskRepositoryCustom;
 import org.ivoligo.task_management_system.repository.TaskStatusRepository;
 import org.ivoligo.task_management_system.service.TaskService;
+import org.ivoligo.task_management_system.service.TaskStatusService;
+import org.ivoligo.task_management_system.utils.ConvertUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -17,139 +19,90 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Transactional
 public class TaskServiceImpl implements TaskService {
 
-    DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
-
     private final TaskRepository taskRepository;
     private final TaskRepositoryCustom taskRepositoryCustom;
     private final TaskStatusRepository taskStatusRepository;
 
-    public TaskServiceImpl(@Autowired TaskRepository taskRepository, TaskRepositoryCustom taskRepositoryCustom, TaskStatusRepository taskStatusRepository) {
+    private final TaskStatusService taskStatusService;
+
+    public TaskServiceImpl(@Autowired TaskRepository taskRepository, TaskRepositoryCustom taskRepositoryCustom, TaskStatusRepository taskStatusRepository, TaskStatusService taskStatusService) {
         this.taskRepository = taskRepository;
         this.taskRepositoryCustom = taskRepositoryCustom;
         this.taskStatusRepository = taskStatusRepository;
+        this.taskStatusService = taskStatusService;
     }
 
     @Override
     @LoggingAround
-    public Long createTask(TaskDto taskDto) {
+    public Optional<TaskDto> createTask(TaskDto taskDto) {
 
         var task = new Task();
         task.setName(taskDto.getName());
         task.setDescription(taskDto.getDescription());
         var date = new Timestamp(System.currentTimeMillis());
-        task.setCreatedDate(date);
-        var status = taskStatusRepository.findTaskStatusByName(taskDto.getStatus());
+        var status = taskStatusService.getTaskStatus(taskDto.getStatus());
         task.setStatus(status);
+        task.setCreatedDate(date);
         task.setUpdatedDate(date);
 
-        var test = taskRepository.save(task);
-        return test.getId();
+        return Optional.of(ConvertUtils.convertTaskToDto(taskRepository.save(task)));
     }
 
     @Override
-    public Page<TaskDto> getTasks(FilterSortDto filterSort, Pageable pageable) {
+    public Optional<Page<TaskDto>> getTasks(FilterSortDto filterSort, Pageable pageable) {
 
-        var tasks = new ArrayList<TaskDto>();
-        taskRepositoryCustom.findByParam(filterSort, pageable).forEach(task -> tasks.add(convert(task)));
+        var taskDtoList = new ArrayList<TaskDto>();
+        taskRepositoryCustom.findByParam(filterSort, pageable).forEach(task -> taskDtoList.add(ConvertUtils.convertTaskToDto(task)));
         val countAllTasks = taskRepository.count();
 
-        return new PageImpl<>(tasks, pageable, countAllTasks);
+        return Optional.of(new PageImpl<>(taskDtoList, pageable, countAllTasks));
     }
 
     @Override
-    public List<TaskDto> getTasks(FilterSortDto filterSort) {
+    public Optional<List<TaskDto>> getTasks(FilterSortDto filterSort) {
 
         var tasks = new ArrayList<TaskDto>();
-        taskRepositoryCustom.findByParam(filterSort).forEach(task -> tasks.add(convert(task)));
+        taskRepositoryCustom.findByParam(filterSort).forEach(task -> tasks.add(ConvertUtils.convertTaskToDto(task)));
 
-        return tasks;
+        return Optional.of(tasks);
     }
 
     @Override
-    public TaskDto getTask(Long id) {
+    public Optional<TaskDto> getTaskById(Long id) {
 
-        return convert(taskRepository.findById(id).orElse(null));
+        var task = taskRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Задача с идентификатором: " + id + "не найдена."));
+        return Optional.of(ConvertUtils.convertTaskToDto(task));
     }
 
-
-    @Override
-    @LoggingAround
-    public boolean updateTask(TaskDto taskDto) {
-
-        val taskOptional = taskRepository.findById(taskDto.getId());
-        if (taskOptional.isPresent()) {
-
-            taskRepository.save(convert(taskDto));
-            return true;
-        }
-        return false;
-
-    }
 
     @Override
     @LoggingAround
-    public boolean deleteTask(Long id) {
+    public Optional<TaskDto> updateTaskIfExists(TaskDto taskDto) {
 
-        if (taskRepository.findById(id).isPresent()) {
-            taskRepository.deleteById(id);
-            return true;
-        }
-        return false;
-    }
-
-    private TaskDto convert(Task task) {
-
-        if (task == null) {
-            return null;
-        }
-        var taskDto = new TaskDto();
-        taskDto.setId(task.getId());
-        taskDto.setName(task.getName());
-        taskDto.setDescription(task.getDescription());
-        taskDto.setStatus(task.getStatus().getName());
-        taskDto.setCreatedDate(convert(task.getCreatedDate().getTime()));
-        taskDto.setUpdatedDate(convert(task.getUpdatedDate().getTime()));
-
-        return taskDto;
-    }
-
-    private Task convert(TaskDto taskDto) {
-
-        var task = new Task();
-        task.setId(taskDto.getId());
-        task.setName(taskDto.getName());
-        task.setDescription(taskDto.getDescription());
+        taskRepository.findById(taskDto.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Задача с идентификатором: " + taskDto.getId() + "не найдена."));
+        var task = ConvertUtils.convertTaskDtoToTask(taskDto);
         task.setStatus(taskStatusRepository.findTaskStatusByName(taskDto.getStatus()));
-        task.setCreatedDate(convert(taskDto.getCreatedDate()));
-        task.setUpdatedDate(new Timestamp(System.currentTimeMillis()));
 
-        return task;
+        return Optional.of(ConvertUtils.convertTaskToDto(taskRepository.save(task)));
+
     }
 
-    private String convert(long timestamp) {
-        return dateFormat.format(new Date(timestamp));
+    @Override
+    @LoggingAround
+    public void deleteTask(Long taskId) {
+
+        taskRepository.findById(taskId)
+                .orElseThrow(() -> new IllegalArgumentException("Задача с идентификатором: " + taskId + "не найдена."));
+        taskRepository.deleteById(taskId);
     }
 
-    private Timestamp convert(String date) {
-
-
-        Timestamp timestamp = null;
-        try {
-            timestamp = new Timestamp(dateFormat.parse(date).getTime());
-        } catch (ParseException e) {
-            e.getMessage();
-        }
-        return timestamp;
-    }
 }

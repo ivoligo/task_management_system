@@ -4,11 +4,13 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 
 import java.sql.Timestamp;
 
 @Getter
 @Setter
+@Accessors(chain = true)
 @Entity
 @Table(name = "task")
 public class Task {
@@ -29,7 +31,7 @@ public class Task {
     @Column(name = "description")
     private String description;
 
-    @Column(name = "created_date", nullable = false)
+    @Column(name = "created_date")
     private Timestamp createdDate;
 
     @Column(name = "update_date")

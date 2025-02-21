@@ -25,7 +25,7 @@ public interface TaskControllerApi {
     ResponseEntity<Page<TaskDto>> getTasks(
             @RequestParam(required = false, defaultValue = "0") int page,
             @RequestParam(required = false, defaultValue = "1") int size,
-            @RequestBody FilterSortDto filterSort);
+            @RequestBody @Valid FilterSortDto filterSort);
 
     @PostMapping("/list")
     @Operation(summary = "Получение списка задач в зависимости от условий.",
@@ -33,30 +33,30 @@ public interface TaskControllerApi {
                     "статусам и сортировке по дате создания или дате изменения. " +
                     "Если ничего не указано возвращает список всех задач.")
     @GetMapping("/list")
-    ResponseEntity<List<TaskDto>> getTasks(@RequestBody FilterSortDto filterSort);
+    ResponseEntity<List<TaskDto>> getTasks(@RequestBody @Valid FilterSortDto filterSort);
 
-    @GetMapping("/{id}")
+    @GetMapping("/get/{id}")
     @Operation(summary = "Получение задачи по идентификатору",
             description = "Позволяет данные конкретной задачи")
     ResponseEntity<TaskDto> getTask(
-            @PathVariable(value = "id") @Parameter(description = "Идентификатор задачи", example = "1") Long id);
+            @PathVariable(value = "id") @Parameter(description = "Идентификатор задачи", example = "1") @Valid Long id);
 
     @PostMapping("/create")
     @Operation(summary = "Заведение задачи",
             description = "Позволяет завести новую задачу")
-    ResponseEntity<Long> addTask(
+    ResponseEntity<TaskDto> createTask(
             @RequestBody @Valid TaskDto task);
 
     @PatchMapping("/update")
     @Operation(summary = "Обновление задачи",
             description = "Позволяет обновить конкретную задачу, например описание или статус")
-    ResponseEntity<?> updateTask(
+    ResponseEntity<TaskDto> updateTask(
             @RequestBody @Valid TaskDto task);
 
     @DeleteMapping("/delete/{id}")
     @Operation(summary = "Удаление конкретной задачи",
             description = "Позволяет удалить задачу")
-    ResponseEntity<?> deleteTask(
-            @PathVariable(value = "id") @Parameter(description = "Идентификатор задачи", example = "1") Long id);
+    ResponseEntity<Void> deleteTask(
+            @PathVariable(value = "id") @Parameter(description = "Идентификатор задачи", example = "1") @Valid Long id);
 
 }

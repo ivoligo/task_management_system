@@ -138,8 +138,8 @@ public class TaskServiceTest {
         final var resultTask = taskService.createTask(testTaskDto1);
 
         assertNotNull(resultTask);
-        assertEquals(testTaskDto1.getName(), resultTask.getName());
-        assertEquals(testTaskDto1.getDescription(), resultTask.getDescription());
+        assertEquals(testTaskDto1, resultTask.get());
+//        assertEquals(testTaskDto1.getDescription(), resultTask.getDescription());
         /* @todo: не понимаю пока как сделать поправить тест и сервис, чтобы работала проверка статуса
             А ВООБЩЕ НУЖНО проверять статусы и то, что находится в других сервисах и репо?
          */
@@ -171,7 +171,7 @@ public class TaskServiceTest {
         when(taskRepository.findById(any(Long.class))).thenReturn(Optional.of(testTask));
 //        doReturn(testTask).when(taskRepository).findById(any()).get();
 
-        final var resultTask = taskService.getTask(ID_TEST_TASK);
+        final var resultTask = taskService.getTaskById(ID_TEST_TASK).get();
         final var actualTestTaskDto = ConvertUtils.convertTaskToDto(testTask);
 
         assertNotNull(resultTask);
@@ -192,10 +192,10 @@ public class TaskServiceTest {
         testTask.setStatus(statusActive);
         when(taskRepository.findById(any(Long.class))).thenReturn(Optional.of(testTask));
         when(taskStatusRepository.findTaskStatusByName(any())).thenReturn(statusActive);
-        when(taskRepository.save(any(Task.class))).thenReturn(ConvertUtils.convertTaskDtoToTask(testTaskDto2));
+        when(taskRepository.save(any(Task.class))).thenReturn( ConvertUtils.convertTaskDtoToTask(testTaskDto2));
 
         // @todo: почему когда заходит в сервисе в метод convertTaskToDto(Task task) status = null? он же везде есть там.
-        final var result = taskService.updateTaskIfExists(testTaskDto2);
+        final var result = taskService.updateTaskIfExists(testTaskDto2).get();
 
         assertEquals(testTaskDto2, result);
     }

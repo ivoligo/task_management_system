@@ -11,15 +11,15 @@ import java.util.Optional;
 
 public interface TaskService {
 
-    TaskDto createTask(TaskDto task);
+    Optional<TaskDto> createTask(TaskDto task);
 
     Optional<Page<TaskDto>> getTasks(FilterSortDto filterSort, Pageable pageable);
 
     Optional<List<TaskDto>> getTasks(FilterSortDto filterSort);
 
-    TaskDto getTask(Long id);
+    Optional<TaskDto> getTaskById(Long id);
 
-    TaskDto updateTaskIfExists(TaskDto task);
+    Optional<TaskDto> updateTaskIfExists(TaskDto task);
 
-    boolean deleteTask(Long id);
+    void deleteTask(Long id);
 }

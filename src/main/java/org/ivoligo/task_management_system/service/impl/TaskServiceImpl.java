@@ -42,20 +42,18 @@ public class TaskServiceImpl implements TaskService {
 
     @Override
     @LoggingAround
-    public TaskDto createTask(TaskDto taskDto) {
+    public Optional<TaskDto> createTask(TaskDto taskDto) {
 
         var task = new Task();
         task.setName(taskDto.getName());
         task.setDescription(taskDto.getDescription());
         var date = new Timestamp(System.currentTimeMillis());
         var status = taskStatusService.getTaskStatus(taskDto.getStatus());
-        System.out.println(" ");
-        task.setCreatedDate(date);
-//        var status = taskStatusService.getTaskStatus(taskDto.getStatus());
         task.setStatus(status);
+        task.setCreatedDate(date);
         task.setUpdatedDate(date);
 
-        return ConvertUtils.convertTaskToDto(taskRepository.save(task));
+        return Optional.of(ConvertUtils.convertTaskToDto(taskRepository.save(task)));
     }
 
     @Override
@@ -78,35 +76,33 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public TaskDto getTask(Long id) {
+    public Optional<TaskDto> getTaskById(Long id) {
 
-        var task = taskRepository.findById(id).orElse(null);
-        return ConvertUtils.convertTaskToDto(task);
+        var task = taskRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Задача с идентификатором: " + id + "не найдена."));
+        return Optional.of(ConvertUtils.convertTaskToDto(task));
     }
 
 
     @Override
     @LoggingAround
-    public TaskDto updateTaskIfExists(TaskDto taskDto) {
+    public Optional<TaskDto> updateTaskIfExists(TaskDto taskDto) {
 
         taskRepository.findById(taskDto.getId())
                 .orElseThrow(() -> new IllegalArgumentException("Задача с идентификатором: " + taskDto.getId() + "не найдена."));
         var task = ConvertUtils.convertTaskDtoToTask(taskDto);
         task.setStatus(taskStatusRepository.findTaskStatusByName(taskDto.getStatus()));
 
-        return ConvertUtils.convertTaskToDto(taskRepository.save(task));
+        return Optional.of(ConvertUtils.convertTaskToDto(taskRepository.save(task)));
 
     }
 
     @Override
     @LoggingAround
-    public boolean deleteTask(Long id) {
+    public void deleteTask(Long taskId) {
 
-        if (taskRepository.findById(id).isPresent()) {
-            taskRepository.deleteById(id);
-            return true;
-        }
-        return false;
+        taskRepository.findById(taskId)
+                .orElseThrow(() -> new IllegalArgumentException("Задача с идентификатором: " + taskId + "не найдена."));
+        taskRepository.deleteById(taskId);
     }
 
 }

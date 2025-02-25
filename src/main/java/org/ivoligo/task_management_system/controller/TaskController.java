@@ -10,9 +10,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 public class TaskController implements TaskControllerApi {
@@ -23,60 +23,59 @@ public class TaskController implements TaskControllerApi {
         this.taskService = taskService;
     }
 
+    @LoggingAround
     @Override
     public ResponseEntity<Page<TaskDto>> getTasks(int page, int size, FilterSortDto filterSort) {
 
         Pageable pageable = PageRequest.of(page, size);
-        var tasks = taskService.getTasks(filterSort, pageable);
-        return !(tasks == null && tasks.isEmpty())
-                ? ResponseEntity.ok(tasks)
-                : ResponseEntity.notFound().build();
+        Optional<Page<TaskDto>> tasks = taskService.getTasks(filterSort, pageable);
+        return tasks
+                .map(taskDtos -> new ResponseEntity<>(taskDtos, HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
+    @LoggingAround
     @Override
     public ResponseEntity<List<TaskDto>> getTasks(FilterSortDto filterSort) {
 
-        var tasks = taskService.getTasks(filterSort);
-        return !(tasks == null && tasks.isEmpty())
-                ? ResponseEntity.ok(tasks)
-                : ResponseEntity.notFound().build();
+        Optional<List<TaskDto>> tasks = taskService.getTasks(filterSort);
+        return tasks
+                .map(taskDtos -> new ResponseEntity<>(taskDtos, HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
+    @LoggingAround
     @Override
-    public ResponseEntity<TaskDto> getTask(Long id) {
+    public ResponseEntity<TaskDto> getTask(Long id) throws IllegalArgumentException {
 
-        var task = taskService.getTask(id);
-        return task != null
-                ? ResponseEntity.ok(task)
-                : ResponseEntity.notFound().build();
+        Optional<TaskDto> task = taskService.getTaskById(id);
+        return task
+                .map(taskDto -> new ResponseEntity<>(taskDto, HttpStatus.OK))
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+
     }
 
     @Override
     @LoggingAround
-    public ResponseEntity<Long> addTask(TaskDto task) {
+    public ResponseEntity<TaskDto> createTask(TaskDto task) {
 
-        var taskId = taskService.createTask(task);
-        return ResponseEntity.created(ServletUriComponentsBuilder.fromCurrentRequest().build(taskId)).build();
-//        return ResponseEntity.status(HttpStatus.CREATED).body(taskService.createTask(task));
+        TaskDto createdTaskDto = taskService.createTask(task).orElseThrow(() -> new IllegalArgumentException("Задача не создана"));
+        return ResponseEntity.status(HttpStatus.CREATED).body(createdTaskDto);
     }
 
     @Override
     @LoggingAround
-    public ResponseEntity<?> updateTask(TaskDto task) {
+    public ResponseEntity<TaskDto> updateTask(TaskDto task) throws IllegalArgumentException {
 
-        var isUpdated = taskService.updateTask(task);
-        return isUpdated
-                ? ResponseEntity.ok(isUpdated)
-                // not found или not modified ?
-                : ResponseEntity.status(HttpStatus.NOT_MODIFIED).build();
+        TaskDto updatedTask = taskService.updateTaskIfExists(task).orElseThrow(() -> new IllegalArgumentException("Задача не обновлена"));
+        return new ResponseEntity<>(updatedTask, HttpStatus.OK);
     }
 
     @Override
     @LoggingAround
-    public ResponseEntity<?> deleteTask(Long id) {
+    public ResponseEntity<Void> deleteTask(Long taskId) throws IllegalArgumentException {
 
-        return taskService.deleteTask(id)
-                ? ResponseEntity.ok().build()
-                : ResponseEntity.notFound().build();
+        taskService.deleteTask(taskId);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 }

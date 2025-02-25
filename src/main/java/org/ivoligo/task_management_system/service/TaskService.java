@@ -6,18 +6,20 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Optional;
+
 
 public interface TaskService {
 
-    Long createTask(TaskDto task);
+    Optional<TaskDto> createTask(TaskDto task);
 
-    Page<TaskDto> getTasks(FilterSortDto filterSort, Pageable pageable);
+    Optional<Page<TaskDto>> getTasks(FilterSortDto filterSort, Pageable pageable);
 
-    List<TaskDto> getTasks(FilterSortDto filterSort);
+    Optional<List<TaskDto>> getTasks(FilterSortDto filterSort);
 
-    TaskDto getTask(Long id);
+    Optional<TaskDto> getTaskById(Long id);
 
-    boolean updateTask(TaskDto task);
+    Optional<TaskDto> updateTaskIfExists(TaskDto task);
 
-    boolean deleteTask(Long id);
+    void deleteTask(Long id);
 }

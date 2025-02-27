@@ -17,7 +17,7 @@ public interface TaskService {
 
     Optional<List<TaskDto>> getTasks(FilterSortDto filterSort);
 
-    Optional<TaskDto> getTaskById(Long id);
+    Optional<TaskDto> getTaskDtoByTaskId(Long id);
 
     Optional<TaskDto> updateTaskIfExists(TaskDto task);
 

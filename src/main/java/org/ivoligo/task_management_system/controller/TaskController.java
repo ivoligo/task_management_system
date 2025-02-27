@@ -48,7 +48,7 @@ public class TaskController implements TaskControllerApi {
     @Override
     public ResponseEntity<TaskDto> getTask(Long id) throws IllegalArgumentException {
 
-        Optional<TaskDto> task = taskService.getTaskById(id);
+        Optional<TaskDto> task = taskService.getTaskDtoByTaskId(id);
         return task
                 .map(taskDto -> new ResponseEntity<>(taskDto, HttpStatus.OK))
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));

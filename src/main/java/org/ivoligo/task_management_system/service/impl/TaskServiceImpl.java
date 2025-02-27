@@ -5,6 +5,7 @@ import org.ivoligo.task_management_system.aop.logging.annotation.LoggingAround;
 import org.ivoligo.task_management_system.model.dto.FilterSortDto;
 import org.ivoligo.task_management_system.model.dto.TaskDto;
 import org.ivoligo.task_management_system.model.entity.Task;
+import org.ivoligo.task_management_system.model.entity.TaskStatus;
 import org.ivoligo.task_management_system.repository.TaskRepository;
 import org.ivoligo.task_management_system.repository.TaskRepositoryCustom;
 import org.ivoligo.task_management_system.repository.TaskStatusRepository;
@@ -18,7 +19,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -44,14 +44,8 @@ public class TaskServiceImpl implements TaskService {
     @LoggingAround
     public Optional<TaskDto> createTask(TaskDto taskDto) {
 
-        var task = new Task();
-        task.setName(taskDto.getName());
-        task.setDescription(taskDto.getDescription());
-        var date = new Timestamp(System.currentTimeMillis());
-        var status = taskStatusService.getTaskStatus(taskDto.getStatus());
-        task.setStatus(status);
-        task.setCreatedDate(date);
-        task.setUpdatedDate(date);
+        TaskStatus status = taskStatusRepository.findTaskStatusByName(taskDto.getStatus());
+        var task = ConvertUtils.convertTaskDtoToTask(taskDto, status);
 
         return Optional.of(ConvertUtils.convertTaskToDto(taskRepository.save(task)));
     }
@@ -76,9 +70,9 @@ public class TaskServiceImpl implements TaskService {
     }
 
     @Override
-    public Optional<TaskDto> getTaskById(Long id) {
+    public Optional<TaskDto> getTaskDtoByTaskId(Long id) {
 
-        var task = taskRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Задача с идентификатором: " + id + "не найдена."));
+        var task = getTaskById(id);
         return Optional.of(ConvertUtils.convertTaskToDto(task));
     }
 
@@ -87,10 +81,9 @@ public class TaskServiceImpl implements TaskService {
     @LoggingAround
     public Optional<TaskDto> updateTaskIfExists(TaskDto taskDto) {
 
-        taskRepository.findById(taskDto.getId())
-                .orElseThrow(() -> new IllegalArgumentException("Задача с идентификатором: " + taskDto.getId() + "не найдена."));
-        var task = ConvertUtils.convertTaskDtoToTask(taskDto);
-        task.setStatus(taskStatusRepository.findTaskStatusByName(taskDto.getStatus()));
+        getTaskById(taskDto.getId());
+        TaskStatus status = taskStatusRepository.findTaskStatusByName(taskDto.getStatus());
+        var task = ConvertUtils.convertTaskDtoToTask(taskDto, status);
 
         return Optional.of(ConvertUtils.convertTaskToDto(taskRepository.save(task)));
 
@@ -100,9 +93,13 @@ public class TaskServiceImpl implements TaskService {
     @LoggingAround
     public void deleteTask(Long taskId) {
 
-        taskRepository.findById(taskId)
-                .orElseThrow(() -> new IllegalArgumentException("Задача с идентификатором: " + taskId + "не найдена."));
+        getTaskById(taskId);
         taskRepository.deleteById(taskId);
+    }
+
+    private Task getTaskById(Long taskId) {
+        return taskRepository.findById(taskId)
+                .orElseThrow(() -> new IllegalArgumentException("Задача с идентификатором: " + taskId + "не найдена."));
     }
 
 }

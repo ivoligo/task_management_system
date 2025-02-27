@@ -33,6 +33,7 @@ public class TaskServiceTest {
     private final static String STATUS_NEW = "Новая";
     private final static String STATUS_ACTIVE = "В работе";
     private final static String STATUS_DONE = "Завершена";
+    private final static Timestamp DATE_TIMESTAMP = new Timestamp(System.currentTimeMillis());
 
     private final TaskDto testTaskDto1 = new TaskDto();
     private final TaskDto testTaskDto2 = new TaskDto();
@@ -123,11 +124,7 @@ public class TaskServiceTest {
     @DisplayName("Тестирование метода создания задачи.")
     void createTask() {
 
-        var date = new Timestamp(System.currentTimeMillis()).getTime();
-        testTaskDto1.setCreatedDate(ConvertUtils.convertTimestampToStringDate(date));
-        testTaskDto1.setUpdatedDate(ConvertUtils.convertTimestampToStringDate(date));
-        var testTask = ConvertUtils.convertTaskDtoToTask(testTaskDto1);
-        testTask.setStatus(statusNew);
+        var testTask = ConvertUtils.convertTaskDtoToTask(testTaskDto1, statusNew);
 
         when(taskRepository.save(any(Task.class))).thenReturn(testTask);
 
@@ -137,7 +134,8 @@ public class TaskServiceTest {
         assertEquals(testTaskDto1.getId(), resultTask.getId());
         assertEquals(testTaskDto1.getName(), resultTask.getName());
         assertEquals(testTaskDto1.getDescription(), resultTask.getDescription());
-        assertEquals(testTaskDto1.getUpdatedDate(), resultTask.getUpdatedDate());
+        assertNotNull(resultTask.getCreatedDate());
+        assertNotNull(resultTask.getUpdatedDate());
 
     }
 
@@ -165,7 +163,7 @@ public class TaskServiceTest {
 
         when(taskRepository.findById(any(Long.class))).thenReturn(Optional.of(testTask));
 
-        final var resultTask = taskService.getTaskById(ID_TEST_TASK).get();
+        final var resultTask = taskService.getTaskDtoByTaskId(ID_TEST_TASK).get();
         final var actualTestTaskDto = ConvertUtils.convertTaskToDto(testTask);
 
         assertNotNull(resultTask);
@@ -183,13 +181,11 @@ public class TaskServiceTest {
     void updateTask() {
 
         testTaskDto2.setId(1L);
-        var task = ConvertUtils.convertTaskDtoToTask(testTaskDto2);
-        task.setStatus(statusActive);
-        var date = new Timestamp(System.currentTimeMillis());
-        task.setCreatedDate(date);
-        testTaskDto2.setCreatedDate(ConvertUtils.convertTimestampToStringDate(date.getTime()));
+        testTaskDto2.setCreatedDate(ConvertUtils.convertTimestampToStringDate(DATE_TIMESTAMP.getTime()));
+        testTaskDto2.setUpdatedDate(ConvertUtils.convertTimestampToStringDate(DATE_TIMESTAMP.getTime()));
+        var task = ConvertUtils.convertTaskDtoToTask(testTaskDto2, statusActive);
 
-        when(taskRepository.findById(any(Long.class))).thenReturn(Optional.of(testTask));
+        when(taskRepository.findById(any(Long.class))).thenReturn(Optional.of(task));
         when(taskRepository.save(any(Task.class))).thenReturn( task);
 
         final var resultTask = taskService.updateTaskIfExists(testTaskDto2).get();

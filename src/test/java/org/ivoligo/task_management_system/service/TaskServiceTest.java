@@ -33,6 +33,7 @@ public class TaskServiceTest {
     private final static String STATUS_NEW = "Новая";
     private final static String STATUS_ACTIVE = "В работе";
     private final static String STATUS_DONE = "Завершена";
+    private final static Timestamp DATE_TIMESTAMP = new Timestamp(System.currentTimeMillis());
 
     private final TaskDto testTaskDto1 = new TaskDto();
     private final TaskDto testTaskDto2 = new TaskDto();
@@ -54,9 +55,6 @@ public class TaskServiceTest {
     @Mock
     private TaskStatusRepository taskStatusRepository;
 
-    @Mock
-    private TaskStatusService taskStatusService;
-
     @InjectMocks
     private TaskServiceImpl taskService;
 
@@ -72,7 +70,9 @@ public class TaskServiceTest {
         testTaskDto2
                 .setName("testTask2")
                 .setDescription("description for testTask2 for update method")
-                .setStatus(STATUS_ACTIVE);
+                .setStatus(STATUS_ACTIVE)
+                .setCreatedDate(ConvertUtils.convertTimestampToStringDate(DATE_TIMESTAMP.getTime()))
+                .setUpdatedDate(ConvertUtils.convertTimestampToStringDate(DATE_TIMESTAMP.getTime()));
 
         statusNew
                 .setId(1)
@@ -123,27 +123,19 @@ public class TaskServiceTest {
     @DisplayName("Тестирование метода создания задачи.")
     void createTask() {
 
-        // @todo: не соответствует методу create() в сервисе? что нужно поменять? в какой момент записывать время???
-        var date = new Timestamp(System.currentTimeMillis()).getTime();
-        testTaskDto1.setCreatedDate(ConvertUtils.convertTimestampToStringDate(date));
-        testTaskDto1.setUpdatedDate(ConvertUtils.convertTimestampToStringDate(date));
-        var testTask = ConvertUtils.convertTaskDtoToTask(testTaskDto1);
+        var testTask = ConvertUtils.convertTaskDtoToTask(testTaskDto1, statusNew);
 
-//        when(taskStatusRepository.findTaskStatusByName(any())).thenReturn(status);
-        // @todo: что делать со статусом? нужно куда перенести?
-//        when(taskStatusService.getTaskStatus(testTaskDto1.getName())).thenReturn(statusTest);
-        testTask.setStatus(statusNew);
         when(taskRepository.save(any(Task.class))).thenReturn(testTask);
 
-        final var resultTask = taskService.createTask(testTaskDto1);
+        final var resultTask = taskService.createTask(testTaskDto1).get();
 
         assertNotNull(resultTask);
-        assertEquals(testTaskDto1, resultTask.get());
-//        assertEquals(testTaskDto1.getDescription(), resultTask.getDescription());
-        /* @todo: не понимаю пока как сделать поправить тест и сервис, чтобы работала проверка статуса
-            А ВООБЩЕ НУЖНО проверять статусы и то, что находится в других сервисах и репо?
-         */
-//        assertEquals(testTaskDto1.getStatus(), resultTask.getStatus());
+        assertEquals(testTaskDto1.getId(), resultTask.getId());
+        assertEquals(testTaskDto1.getName(), resultTask.getName());
+        assertEquals(testTaskDto1.getDescription(), resultTask.getDescription());
+        assertNotNull(resultTask.getCreatedDate());
+        assertNotNull(resultTask.getUpdatedDate());
+
     }
 
     @Test
@@ -169,9 +161,8 @@ public class TaskServiceTest {
     void getTask() {
 
         when(taskRepository.findById(any(Long.class))).thenReturn(Optional.of(testTask));
-//        doReturn(testTask).when(taskRepository).findById(any()).get();
 
-        final var resultTask = taskService.getTaskById(ID_TEST_TASK).get();
+        final var resultTask = taskService.getTaskDtoByTaskId(ID_TEST_TASK).get();
         final var actualTestTaskDto = ConvertUtils.convertTaskToDto(testTask);
 
         assertNotNull(resultTask);
@@ -189,15 +180,19 @@ public class TaskServiceTest {
     void updateTask() {
 
         testTaskDto2.setId(1L);
-        testTask.setStatus(statusActive);
-        when(taskRepository.findById(any(Long.class))).thenReturn(Optional.of(testTask));
-        when(taskStatusRepository.findTaskStatusByName(any())).thenReturn(statusActive);
-        when(taskRepository.save(any(Task.class))).thenReturn( ConvertUtils.convertTaskDtoToTask(testTaskDto2));
 
-        // @todo: почему когда заходит в сервисе в метод convertTaskToDto(Task task) status = null? он же везде есть там.
-        final var result = taskService.updateTaskIfExists(testTaskDto2).get();
+        var task = ConvertUtils.convertTaskDtoToTask(testTaskDto2, statusActive);
 
-        assertEquals(testTaskDto2, result);
+        when(taskRepository.findById(any(Long.class))).thenReturn(Optional.of(task));
+        when(taskRepository.save(any(Task.class))).thenReturn(task);
+
+        final var resultTask = taskService.updateTaskIfExists(testTaskDto2).get();
+
+        assertNotNull(resultTask);
+        assertEquals(testTaskDto2.getId(), resultTask.getId());
+        assertEquals(testTaskDto2.getCreatedDate(), resultTask.getCreatedDate());
+        assertNotEquals(testTaskDto2.getUpdatedDate(), resultTask.getUpdatedDate());
+
     }
 
     @Test

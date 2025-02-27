@@ -3,6 +3,7 @@ package org.ivoligo.task_management_system.utils;
 import org.apache.commons.lang3.StringUtils;
 import org.ivoligo.task_management_system.model.dto.TaskDto;
 import org.ivoligo.task_management_system.model.entity.Task;
+import org.ivoligo.task_management_system.model.entity.TaskStatus;
 
 import java.sql.Timestamp;
 import java.text.DateFormat;
@@ -30,14 +31,21 @@ public class ConvertUtils {
         return taskDto;
     }
 
-    public static Task convertTaskDtoToTask(TaskDto taskDto) {
+    public static Task convertTaskDtoToTask(TaskDto taskDto, TaskStatus status) {
 
         var task = new Task();
         task.setId(taskDto.getId());
         task.setName(taskDto.getName());
         task.setDescription(taskDto.getDescription());
-        task.setCreatedDate(convertStringDateToTimestamp(taskDto.getCreatedDate()));
-        task.setUpdatedDate(new Timestamp(System.currentTimeMillis()));
+        task.setStatus(status);
+        if (taskDto.getCreatedDate() != null) {
+            task.setCreatedDate(convertStringDateToTimestamp(taskDto.getCreatedDate()));
+            task.setUpdatedDate(new Timestamp(System.currentTimeMillis()));
+        } else {
+            var date = new Timestamp(System.currentTimeMillis());
+            task.setCreatedDate(date);
+            task.setUpdatedDate(date);
+        }
 
         return task;
     }

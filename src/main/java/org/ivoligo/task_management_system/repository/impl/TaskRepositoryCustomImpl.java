@@ -3,7 +3,9 @@ package org.ivoligo.task_management_system.repository.impl;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 import org.ivoligo.task_management_system.model.dto.FilterSortDto;
 import org.ivoligo.task_management_system.model.entity.Task;
 import org.ivoligo.task_management_system.repository.TaskRepositoryCustom;
@@ -14,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+@Slf4j
 @Repository
 public class TaskRepositoryCustomImpl implements TaskRepositoryCustom {
 
@@ -51,12 +54,10 @@ public class TaskRepositoryCustomImpl implements TaskRepositoryCustom {
             sqlParams.put("statuses", filterSort.getFilterStatusNames());
 
         }
-        if (filterSort.isSortCreatedDate()) {
-            //Сделал desc, чтобы было видно как работает.
-            sqlFilter.append(" order by t.createdDate desc ");
-        } else if (filterSort.isSortModifiedDate()) {
-            //Сделал desc, чтобы было видно как работает.
-            sqlFilter.append(" order by t.updatedDate desc ");
+        if (StringUtils.isNotEmpty(filterSort.getSortCreatedDate())) {
+            sqlFilter.append(" order by t.createdDate ").append(filterSort.getSortCreatedDate());
+        } else if (StringUtils.isNotEmpty(filterSort.getSortModifiedDate())) {
+            sqlFilter.append(" order by t.updatedDate ").append(filterSort.getSortModifiedDate());
         }
 
         Query query = em.createQuery(FIND_TASKS_SQL_QUERY + sqlFilter, Task.class);

@@ -14,9 +14,9 @@ public class FilterSortDto {
     @Schema(description = "Фильтр для получения списка задач по статусу или статусам", example = "[\"Новая\", \"Завершена\"]", allowableValues = {"Новая", "В работе", "Завершена"})
     private List<String> filterStatusNames;
 
-    @Schema(description = "Включение сортировки по дате создания", example = "true")
-    private boolean sortCreatedDate;
+    @Schema(description = "Включение сортировки по дате создания", example = "true", allowableValues = {"asc", "desc"})
+    private String sortCreatedDate;
 
-    @Schema(description = "Включение сортировки по дате изменения", example = "false")
-    private boolean sortModifiedDate;
+    @Schema(description = "Включение сортировки по дате изменения", example = "false", allowableValues = {"asc", "desc"})
+    private String sortModifiedDate;
 }

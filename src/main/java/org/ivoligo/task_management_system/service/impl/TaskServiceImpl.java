@@ -10,7 +10,6 @@ import org.ivoligo.task_management_system.repository.TaskRepository;
 import org.ivoligo.task_management_system.repository.TaskRepositoryCustom;
 import org.ivoligo.task_management_system.repository.TaskStatusRepository;
 import org.ivoligo.task_management_system.service.TaskService;
-import org.ivoligo.task_management_system.service.TaskStatusService;
 import org.ivoligo.task_management_system.utils.ConvertUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -31,13 +30,10 @@ public class TaskServiceImpl implements TaskService {
     private final TaskRepositoryCustom taskRepositoryCustom;
     private final TaskStatusRepository taskStatusRepository;
 
-    private final TaskStatusService taskStatusService;
-
-    public TaskServiceImpl(@Autowired TaskRepository taskRepository, TaskRepositoryCustom taskRepositoryCustom, TaskStatusRepository taskStatusRepository, TaskStatusService taskStatusService) {
+    public TaskServiceImpl(@Autowired TaskRepository taskRepository, TaskRepositoryCustom taskRepositoryCustom, TaskStatusRepository taskStatusRepository) {
         this.taskRepository = taskRepository;
         this.taskRepositoryCustom = taskRepositoryCustom;
         this.taskStatusRepository = taskStatusRepository;
-        this.taskStatusService = taskStatusService;
     }
 
     @Override

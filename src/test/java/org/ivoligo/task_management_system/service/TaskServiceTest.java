@@ -55,9 +55,6 @@ public class TaskServiceTest {
     @Mock
     private TaskStatusRepository taskStatusRepository;
 
-    @Mock
-    private TaskStatusService taskStatusService;
-
     @InjectMocks
     private TaskServiceImpl taskService;
 
@@ -73,7 +70,9 @@ public class TaskServiceTest {
         testTaskDto2
                 .setName("testTask2")
                 .setDescription("description for testTask2 for update method")
-                .setStatus(STATUS_ACTIVE);
+                .setStatus(STATUS_ACTIVE)
+                .setCreatedDate(ConvertUtils.convertTimestampToStringDate(DATE_TIMESTAMP.getTime()))
+                .setUpdatedDate(ConvertUtils.convertTimestampToStringDate(DATE_TIMESTAMP.getTime()));
 
         statusNew
                 .setId(1)
@@ -181,12 +180,11 @@ public class TaskServiceTest {
     void updateTask() {
 
         testTaskDto2.setId(1L);
-        testTaskDto2.setCreatedDate(ConvertUtils.convertTimestampToStringDate(DATE_TIMESTAMP.getTime()));
-        testTaskDto2.setUpdatedDate(ConvertUtils.convertTimestampToStringDate(DATE_TIMESTAMP.getTime()));
+
         var task = ConvertUtils.convertTaskDtoToTask(testTaskDto2, statusActive);
 
         when(taskRepository.findById(any(Long.class))).thenReturn(Optional.of(task));
-        when(taskRepository.save(any(Task.class))).thenReturn( task);
+        when(taskRepository.save(any(Task.class))).thenReturn(task);
 
         final var resultTask = taskService.updateTaskIfExists(testTaskDto2).get();
 

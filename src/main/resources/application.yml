@@ -9,6 +9,9 @@ spring:
       ddl-auto: validate
     show-sql: true
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+    properties:
+      hibernate:
+        format_sql: true
   datasource:
     url: jdbc:postgresql://localhost:5432/task_management_system?useSSL=false
     username: postgres
@@ -20,3 +23,11 @@ spring:
   aop:
     auto: true
     proxy-target-class: true
+#logging:
+#  level:
+#    org:
+#      hibernate:
+#        sql: debug
+#        type:
+#          descriptor:
+#            sql: trace
